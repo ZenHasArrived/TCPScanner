@@ -18,7 +18,7 @@ fn main() {
 
         match IpAddr::from_str(user_input.trim()){ //Checks if the IP is valid to be turned into IpAddr from the string
             Ok(ip) => break ip, //if good, break loop and return ip to line 9 ip
-            Err(_) => {println!("invalid ip address\n"); continue;} //if it no work, tell them and continue
+            Err(_) => {println!("invalid ip address"); continue;} //if it no work, tell them and continue
         }
     };
 
@@ -38,7 +38,7 @@ fn main() {
 
     //GET END PORT
     let end_port: u16 = loop { //same as start port
-        print!("Enter the starting port: ");
+        print!("Enter the ending port: ");
         io::stdout().flush().unwrap();
 
         let mut user_input = String::new();
@@ -49,6 +49,8 @@ fn main() {
             Err(_) => {println!("invalid ending port, please enter a number between 0 and 65535."); continue;}
         }
     };
+
+    println!("Scanning...");
 
     for port in start_port..=end_port {//Go through each port in the range
 
