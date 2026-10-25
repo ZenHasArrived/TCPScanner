@@ -32,7 +32,7 @@ fn main() {
 
         match user_input.trim().parse() { //trim to get rid of whitespace, parse turns it to an u16
             Ok(port) => break port,
-            Err(_) => {println!("invalid starting port, please enter a number between 0 and 65535.\n"); continue;}
+            Err(_) => {println!("invalid starting port, please enter a number between 0 and 65535."); continue;}
         }
     };
 
@@ -46,10 +46,20 @@ fn main() {
 
         match user_input.trim().parse() {
             Ok(port) => break port,
-            Err(_) => {println!("invalid ending port, please enter a number between 0 and 65535.\n"); continue;}
+            Err(_) => {println!("invalid ending port, please enter a number between 0 and 65535."); continue;}
         }
     };
 
-    
+    for port in start_port..=end_port {//Go through each port in the range
+
+        let socket_addr = SocketAddr::new(ip, port); //make a SocketAddr using the ip and port
+
+        match TcpStream::connect_timeout(&socket_addr, Duration::from_secs(1)){ //create a connection using the SocketAddr that times out after a second
+            Ok(_) => {println!("Port: {} is open", port);} //If the connection succeeds, print the current port as open
+            Err(_) => {} //If the connection fails, do nothing
+        }
+    }
+
+    println!("\nScan complete!");
 
 }
