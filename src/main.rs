@@ -52,6 +52,7 @@ fn main() {
 
     println!("Scanning...");
 
+    //TODO: Make this multithreaded so it runs WAYYY faster
     for port in start_port..=end_port {//Go through each port in the range
 
         let socket_addr = SocketAddr::new(ip, port); //make a SocketAddr using the ip and port
