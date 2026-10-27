@@ -3,6 +3,8 @@ use std::net::{IpAddr, SocketAddr, TcpStream};
 use std::str::FromStr;
 use std::io;
 use std::io::Write;
+use std::thread;
+use std::sync::mpsc::channel;
 
 
 //I'm gonna make a lot of comments since this is a learning project so just know that
@@ -52,17 +54,28 @@ fn main() {
 
     println!("Scanning...");
 
-    //TODO: Make this multithreaded so it runs WAYYY faster
-    for port in start_port..=end_port {//Go through each port in the range
+    let (tx,rx) = channel(); //create a channel with tx as a sender and rx as a receiver
 
-        let socket_addr = SocketAddr::new(ip, port); //make a SocketAddr using the ip and port
+    thread::scope(|s| { //create a scope for the threads, basically lets them take external variables and auto joins them so they all finish before main
+        for port in start_port..=end_port { //Go through each port in the range
+            let tx = tx.clone(); //clone the sender so each thread has its own because Rust ownership
 
-        match TcpStream::connect_timeout(&socket_addr, Duration::from_secs(1)){ //create a connection using the SocketAddr that times out after a second
-            Ok(_) => {println!("Port: {} is open", port);} //If the connection succeeds, print the current port as open
-            Err(_) => {} //If the connection fails, do nothing
+            s.spawn(move || { //spawn a thread that has access to port
+                let socket_addr = SocketAddr::new(ip, port); //make a SocketAddr using the ip and port
+
+                match TcpStream::connect_timeout(&socket_addr, Duration::from_secs(1)) { //create a connection using the SocketAddr that times out after a second
+                    Ok(_) => { let _ = tx.send(port); } //If the connection succeeds, send the port to rx via tx, using let _ so it ignores errors without crashing
+                    Err(_) => {} //If the connection fails, do nothing
+                }
+            });
         }
+    });//where the program will wait for the threads to finish
+
+    drop(tx); //let rx know that tx is done
+
+    for port in rx{ //loop through all data in rx and print each port that is open
+        println!("{} is open", port);
     }
 
-    println!("\nScan complete!");
-
-}
+    println!("Scanned complete!");
+    }
